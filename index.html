@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Natchez Trace: 1815</title>
+    <!-- Tailwind CSS for modern, colorful styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* light gray-blue */
+            background-image: url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23d1d5db" fill-opacity="0.4"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');
+        }
+        h1, h2, h3, .serif {
+            font-family: 'Playfair Display', serif;
+        }
+        /* Custom scrollbar for log */
+        #event-log::-webkit-scrollbar {
+            width: 8px;
+        }
+        #event-log::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+            border-radius: 4px;
+        }
+        #event-log::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        #event-log::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+        .hidden-screen {
+            display: none !important;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 text-slate-800">
+
+    <div id="game-container" class="bg-white shadow-2xl rounded-2xl w-full max-w-4xl overflow-hidden border border-slate-200">
+        
+        <!-- ==================== SCREEN: MAIN MENU ==================== -->
+        <div id="screen-main" class="p-8 md:p-16 text-center fade-in bg-gradient-to-b from-emerald-800 to-emerald-950 text-white min-h-[600px] flex flex-col justify-center">
+            <h3 class="text-emerald-300 font-semibold tracking-widest uppercase mb-2">Mississippi Territory</h3>
+            <h1 class="text-5xl md:text-7xl font-bold mb-6 serif">The Natchez Trace</h1>
+            <p class="text-lg md:text-xl text-emerald-100 mb-10 max-w-2xl mx-auto">
+                Travel 440 perilous miles from Nashville to Natchez in the year 1815. Survive disease, bandits, and the brutal wilderness.
+            </p>
+            <div>
+                <button onclick="showScreen('screen-setup')" class="bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-4 px-10 rounded-full shadow-lg transform transition hover:scale-105 text-lg">
+                    Begin the Journey
+                </button>
+            </div>
+        </div>
+
+        <!-- ==================== SCREEN: SETUP ==================== -->
+        <div id="screen-setup" class="p-8 hidden-screen fade-in">
+            <h2 class="text-3xl font-bold mb-6 serif text-emerald-900 border-b pb-2">Expedition Setup</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Left Column -->
+                <div>
+                    <h3 class="text-xl font-semibold mb-4 text-slate-700">1. Choose Profession</h3>
+                    <div class="space-y-3">
+                        <label class="block p-4 border rounded-xl cursor-pointer hover:bg-emerald-50 transition border-emerald-200 bg-emerald-50" id="prof-1-label">
+                            <input type="radio" name="profession" value="planter" class="hidden" checked onchange="updateProfessionUI()">
+                            <div class="font-bold text-lg">Wealthy Cotton Planter</div>
+                            <div class="text-sm text-slate-600">Starts with $1,600. (Easy)</div>
+                        </label>
+                        <label class="block p-4 border rounded-xl cursor-pointer hover:bg-emerald-50 transition" id="prof-2-label">
+                            <input type="radio" name="profession" value="preacher" class="hidden" onchange="updateProfessionUI()">
+                            <div class="font-bold text-lg">Frontier Preacher</div>
+                            <div class="text-sm text-slate-600">Starts with $800. Bonus to morale. (Normal)</div>
+                        </label>
+                        <label class="block p-4 border rounded-xl cursor-pointer hover:bg-emerald-50 transition" id="prof-3-label">
+                            <input type="radio" name="profession" value="boatman" class="hidden" onchange="updateProfessionUI()">
+                            <div class="font-bold text-lg">"Kaintuck" Boatman</div>
+                            <div class="text-sm text-slate-600">Starts with $400. Tough survivalist. (Hard)</div>
+                        </label>
+                        <label class="block p-4 border rounded-xl cursor-pointer hover:bg-emerald-50 transition" id="prof-4-label">
+                            <input type="radio" name="profession" value="physician" class="hidden" onchange="updateProfessionUI()">
+                            <div class="font-bold text-lg">Country Doctor</div>
+                            <div class="text-sm text-slate-600">Starts with $900. High disease recovery rate.</div>
+                        </label>
+                        <label class="block p-4 border rounded-xl cursor-pointer hover:bg-emerald-50 transition" id="prof-5-label">
+                            <input type="radio" name="profession" value="veteran" class="hidden" onchange="updateProfessionUI()">
+                            <div class="font-bold text-lg">Militia Veteran</div>
+                            <div class="text-sm text-slate-600">Starts with $600. Better hunting, endures hard pacing.</div>
+                        </label>
+                    </div>
+
+                    <h3 class="text-xl font-semibold mt-6 mb-3 text-slate-700">2. Direction of Travel</h3>
+                    <div class="grid grid-cols-2 gap-3 mb-6">
+                        <label class="block p-3 border rounded-xl cursor-pointer hover:bg-emerald-50 transition border-emerald-500 bg-emerald-50" id="dir-south-label">
+                            <input type="radio" name="direction" value="southbound" class="hidden" checked onchange="updateDirectionUI()">
+                            <div class="font-bold text-sm text-emerald-900">Southbound</div>
+                            <div class="text-xs text-slate-600">Nashville ➔ Natchez</div>
+                        </label>
+                        <label class="block p-3 border rounded-xl cursor-pointer hover:bg-emerald-50 transition" id="dir-north-label">
+                            <input type="radio" name="direction" value="northbound" class="hidden" onchange="updateDirectionUI()">
+                            <div class="font-bold text-sm text-emerald-900">Northbound (Kaintuck)</div>
+                            <div class="text-xs text-slate-600">Natchez ➔ Nashville</div>
+                        </label>
+                    </div>
+
+                    <h3 class="text-xl font-semibold mb-3 text-slate-700">3. Departure Month</h3>
+                    <select id="start-month" class="w-full p-3 border rounded-lg bg-white focus:ring-2 focus:ring-emerald-500 outline-none">
+                        <option value="3">April (Muddy, mild)</option>
+                        <option value="5">June (Hot, mosquitoes)</option>
+                        <option value="8">September (Dry, cool later)</option>
+                    </select>
+                </div>
+
+                <!-- Right Column -->
+                <div>
+                    <h3 class="text-xl font-semibold mb-4 text-slate-700">4. Name Your Party</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Trail Leader (You)</label>
+                            <input type="text" id="name-0" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" value="Elias">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Companion 1</label>
+                            <input type="text" id="name-1" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" value="Sarah">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Companion 2</label>
+                            <input type="text" id="name-2" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" value="Thomas">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Companion 3</label>
+                            <input type="text" id="name-3" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" value="Mary">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Companion 4</label>
+                            <input type="text" id="name-4" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" value="John">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 text-right">
+                <button onclick="initStore()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-8 rounded-lg shadow transition">
+                    Head to General Store ➔
+                </button>
+            </div>
+        </div>
+
+        <!-- ==================== SCREEN: STORE ==================== -->
+        <div id="screen-store" class="p-8 hidden-screen fade-in bg-amber-50">
+            <h2 class="text-3xl font-bold mb-2 serif text-amber-900 border-b border-amber-200 pb-2" id="store-title">Peabody's General Store</h2>
+            <p class="text-amber-800 mb-6" id="store-subtitle">Nashville, TN. Equip your wagon before hitting the Trace.</p>
+            
+            <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm mb-6 border border-amber-100">
+                <div class="text-lg font-semibold text-slate-700">Funds Available:</div>
+                <div class="text-2xl font-bold text-emerald-600">$<span id="store-money">1600.00</span></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- Store Items -->
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-amber-100 flex justify-between items-center">
+                    <div>
+                        <h4 class="font-bold text-slate-800">Oxen</h4>
+                        <p class="text-xs text-slate-500">$40.00 / yoke (2 oxen)</p>
+                        <p class="text-xs text-amber-600">Recommend at least 2 yoke.</p>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="number" id="buy-oxen" min="0" max="10" value="0" class="w-16 p-2 border rounded text-center" onchange="calculateBill()">
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-amber-100 flex justify-between items-center">
+                    <div>
+                        <h4 class="font-bold text-slate-800">Food (Bacon, Cornmeal)</h4>
+                        <p class="text-xs text-slate-500">$0.20 / pound</p>
+                        <p class="text-xs text-amber-600">Recommend 200 lbs per person.</p>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="number" id="buy-food" min="0" max="2000" step="10" value="0" class="w-20 p-2 border rounded text-center" onchange="calculateBill()">
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-amber-100 flex justify-between items-center">
+                    <div>
+                        <h4 class="font-bold text-slate-800">Clothing Sets</h4>
+                        <p class="text-xs text-slate-500">$10.00 / set</p>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="number" id="buy-clothes" min="0" max="20" value="0" class="w-16 p-2 border rounded text-center" onchange="calculateBill()">
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-amber-100 flex justify-between items-center">
+                    <div>
+                        <h4 class="font-bold text-slate-800">Ammunition</h4>
+                        <p class="text-xs text-slate-500">$2.00 / box (20 bullets)</p>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="number" id="buy-ammo" min="0" max="100" value="0" class="w-16 p-2 border rounded text-center" onchange="calculateBill()">
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-amber-100 flex justify-between items-center">
+                    <div>
+                        <h4 class="font-bold text-slate-800">Spare Wagon Parts</h4>
+                        <p class="text-xs text-slate-500">$10.00 / part</p>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="number" id="buy-parts" min="0" max="10" value="0" class="w-16 p-2 border rounded text-center" onchange="calculateBill()">
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-col md:flex-row justify-between items-center border-t border-amber-200 pt-6">
+                <div class="mb-4 md:mb-0">
+                    <span class="text-lg text-slate-600 font-medium">Total Bill: </span>
+                    <span class="text-2xl font-bold text-rose-600">$<span id="store-bill">0.00</span></span>
+                    <p id="store-error" class="text-rose-500 text-sm hidden">Not enough money!</p>
+                </div>
+                <button onclick="finishShopping()" id="btn-finish-store" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-8 rounded-lg shadow transition w-full md:w-auto">
+                    Hit the Trace ➔
+                </button>
+            </div>
+        </div>
+
+        <!-- ==================== SCREEN: MAIN TRAIL ==================== -->
+        <div id="screen-trail" class="hidden-screen fade-in flex flex-col md:flex-row min-h-[600px] bg-slate-50">
+            
+            <!-- Sidebar: Status -->
+            <div class="w-full md:w-1/3 bg-slate-800 text-slate-200 p-6 flex flex-col">
+                <h2 class="text-2xl font-bold text-white mb-4 serif border-b border-slate-600 pb-2">Status</h2>
+                
+                <div class="space-y-4 flex-grow">
+                    <div>
+                        <p class="text-xs text-slate-400 uppercase tracking-wider">Date</p>
+                        <p class="text-lg font-semibold text-emerald-300" id="ui-date">May 12, 1815</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400 uppercase tracking-wider">Weather</p>
+                        <p class="text-lg font-semibold" id="ui-weather">Warm & Clear</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400 uppercase tracking-wider">Party Health</p>
+                        <p class="text-lg font-semibold" id="ui-health">Good</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400 uppercase tracking-wider">Pace</p>
+                        <p class="text-lg font-semibold text-amber-300" id="ui-pace">Steady</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400 uppercase tracking-wider">Rations</p>
+                        <p class="text-lg font-semibold text-amber-300" id="ui-rations">Filling</p>
+                    </div>
+                    
+                    <div class="pt-4 border-t border-slate-600">
+                        <p class="text-xs text-slate-400 uppercase tracking-wider mb-2">Supplies</p>
+                        <div class="grid grid-cols-2 gap-2 text-sm">
+                            <div>Food: <span id="ui-inv-food" class="font-bold text-white">0</span> lbs</div>
+                            <div>Oxen: <span id="ui-inv-oxen" class="font-bold text-white">0</span></div>
+                            <div>Clothes: <span id="ui-inv-clothes" class="font-bold text-white">0</span></div>
+                            <div>Ammo: <span id="ui-inv-ammo" class="font-bold text-white">0</span></div>
+                            <div>Parts: <span id="ui-inv-parts" class="font-bold text-white">0</span></div>
+                            <div>Money: $<span id="ui-inv-money" class="font-bold text-white">0</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 pt-4 border-t border-slate-600">
+                    <p class="text-xs text-slate-400 uppercase tracking-wider mb-1" id="ui-destination-label">Miles to Natchez</p>
+                    <div class="flex justify-between text-white font-bold mb-1">
+                        <span id="ui-miles-traveled">0</span>
+                        <span>440</span>
+                    </div>
+                    <div class="w-full bg-slate-700 rounded-full h-2.5">
+                        <div id="ui-progress-bar" class="bg-emerald-500 h-2.5 rounded-full" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Area -->
+            <div class="w-full md:w-2/3 p-6 flex flex-col relative bg-cover bg-center" id="trail-bg" style="background-image: linear-gradient(rgba(248, 250, 252, 0.9), rgba(248, 250, 252, 0.95)), url('data:image/svg+xml,%3Csvg width=\'100\' height=\'100\' viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M10 50 Q 30 20 50 50 T 90 50\' fill=\'none\' stroke=\'%23cbd5e1\' stroke-width=\'2\'/%3E%3C/svg%3E');">
+                
+                <div class="flex-grow">
+                    <!-- Location Header -->
+                    <div class="mb-6 text-center">
+                        <h2 class="text-3xl font-bold serif text-slate-800" id="ui-location">The Natchez Trace</h2>
+                        <p class="text-slate-500" id="ui-next-landmark">Next landmark: Duck River in 45 miles</p>
+                    </div>
+
+                    <!-- Event Log -->
+                    <div class="bg-white bg-opacity-80 border border-slate-200 rounded-xl p-4 h-64 overflow-y-auto mb-6 shadow-inner" id="event-log">
+                        <p class="text-slate-600 italic">The journey begins...</p>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <button onclick="continueTrail()" class="col-span-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg shadow transition flex items-center justify-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
+                        Continue Trail
+                    </button>
+                    <button onclick="openModal('modal-rest')" class="bg-slate-700 hover:bg-slate-800 text-white font-bold py-3 rounded-lg shadow transition">
+                        Rest
+                    </button>
+                    <button onclick="openModal('modal-settings')" class="bg-slate-700 hover:bg-slate-800 text-white font-bold py-3 rounded-lg shadow transition">
+                        Pace/Rations
+                    </button>
+                    <button onclick="hunt()" class="col-span-2 md:col-span-4 bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 rounded-lg shadow transition flex items-center justify-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                        Hunt for Food
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ==================== SCREEN: END GAME ==================== -->
+        <div id="screen-end" class="p-12 text-center hidden-screen fade-in bg-slate-900 text-white min-h-[600px] flex flex-col justify-center">
+            <h1 class="text-5xl font-bold mb-4 serif" id="end-title">Game Over</h1>
+            <p class="text-xl mb-8 text-slate-300" id="end-message">You have died of dysentery.</p>
+            
+            <div class="bg-slate-800 p-6 rounded-xl max-w-md mx-auto mb-8 border border-slate-700 text-left">
+                <h3 class="text-lg font-bold text-emerald-400 border-b border-slate-700 pb-2 mb-4">Expedition Summary</h3>
+                <ul class="space-y-2 text-slate-300">
+                    <li>Leader: <span id="end-leader" class="text-white font-semibold"></span></li>
+                    <li>Miles Traveled: <span id="end-miles" class="text-white font-semibold"></span> / 440</li>
+                    <li>Days on Trail: <span id="end-days" class="text-white font-semibold"></span></li>
+                    <li>Survivors: <span id="end-survivors" class="text-white font-semibold"></span> / 5</li>
+                    <li>Final Score: <span id="end-score" class="text-emerald-400 font-bold text-xl"></span></li>
+                </ul>
+            </div>
+
+            <div>
+                <button onclick="location.reload()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-8 rounded-full shadow-lg transition">
+                    Play Again
+                </button>
+            </div>
+        </div>
+
+        <!-- ==================== MODALS ==================== -->
+        <!-- Generic Event Modal -->
+        <div id="modal-event" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden-screen">
+            <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 border-t-8 border-amber-500">
+                <h3 class="text-2xl font-bold mb-4 serif text-slate-800" id="event-title">Event Title</h3>
+                <p class="text-slate-600 mb-6 text-lg" id="event-desc">Event description goes here.</p>
+                <div id="event-options" class="space-y-3">
+                    <button onclick="closeModal('modal-event')" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-lg transition">Continue</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Modal (Pace/Rations) -->
+        <div id="modal-settings" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden-screen">
+            <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4">
+                <h3 class="text-2xl font-bold mb-6 serif text-slate-800 border-b pb-2">Change Pace & Rations</h3>
+                
+                <div class="mb-6">
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Current Pace</label>
+                    <select id="select-pace" class="w-full p-3 border rounded-lg bg-slate-50 focus:ring-2 focus:ring-emerald-500 outline-none" onchange="changeSettings()">
+                        <option value="steady">Steady (15 mi/day, low strain)</option>
+                        <option value="strenuous">Strenuous (20 mi/day, medium strain)</option>
+                        <option value="grueling">Grueling (25 mi/day, high strain)</option>
+                    </select>
+                </div>
+
+                <div class="mb-8">
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Current Rations</label>
+                    <select id="select-rations" class="w-full p-3 border rounded-lg bg-slate-50 focus:ring-2 focus:ring-emerald-500 outline-none" onchange="changeSettings()">
+                        <option value="filling">Filling (3 lbs/person/day)</option>
+                        <option value="meager">Meager (2 lbs/person/day)</option>
+                        <option value="bare">Bare Bones (1 lb/person/day)</option>
+                    </select>
+                </div>
+
+                <button onclick="closeModal('modal-settings')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg transition">Done</button>
+            </div>
+        </div>
+
+        <!-- Rest Modal -->
+        <div id="modal-rest" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden-screen">
+            <div class="bg-white rounded-xl shadow-2xl p-8 max-w-sm w-full mx-4">
+                <h3 class="text-2xl font-bold mb-4 serif text-slate-800">Rest to Heal</h3>
+                <p class="text-slate-600 mb-6">Resting consumes food and time, but helps the party recover health.</p>
+                <div class="mb-6">
+                    <label class="block text-sm font-bold text-slate-700 mb-2">How many days?</label>
+                    <input type="number" id="input-rest-days" min="1" max="9" value="1" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-center text-xl">
+                </div>
+                <div class="flex space-x-3">
+                    <button onclick="closeModal('modal-rest')" class="w-1/2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-3 rounded-lg transition">Cancel</button>
+                    <button onclick="executeRest()" class="w-1/2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg transition">Rest</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- AUDIO (Optional, simple web audio synth for basic blips to mimic retro feel without external files) -->
+    <script>
+        // --- GAME STATE ---
+        const gameState = {
+            profession: '',
+            direction: 'southbound', // southbound | northbound
+            party: [],
+            month: 0,
+            year: 1815,
+            day: 1,
+            money: 0,
+            inventory: {
+                oxen: 0,
+                food: 0,
+                clothes: 0,
+                ammo: 0,
+                parts: 0
+            },
+            miles: 0,
+            totalMiles: 440,
+            pace: 'steady', // steady, strenuous, grueling
+            rations: 'filling', // filling, meager, bare
+            weather: 'Warm',
+            active: false,
+            daysPassed: 0,
+            landmarks: [],
+            nextLandmarkIndex: 0
+        };
+
+        const landmarksSouth = [
+            { name: "Gordon's Ferry (Duck River)", miles: 45, type: 'river' },
+            { name: "Colbert's Stand (Tennessee River)", miles: 110, type: 'fort' },
+            { name: "Chickasaw Agency", miles: 190, type: 'trade' },
+            { name: "French Camp", miles: 270, type: 'fort' },
+            { name: "Doak's Stand", miles: 330, type: 'fort' },
+            { name: "Mount Locust", miles: 425, type: 'inn' },
+            { name: "Natchez, MS", miles: 440, type: 'finish' }
+        ];
+
+        const landmarksNorth = [
+            { name: "Mount Locust Inn", miles: 15, type: 'inn' },
+            { name: "Doak's Stand", miles: 110, type: 'fort' },
+            { name: "French Camp", miles: 170, type: 'fort' },
+            { name: "Chickasaw Agency", miles: 250, type: 'trade' },
+            { name: "Colbert's Stand (Tennessee River)", miles: 330, type: 'fort' },
+            { name: "Gordon's Ferry (Duck River)", miles: 395, type: 'river' },
+            { name: "Nashville, TN", miles: 440, type: 'finish' }
+        ];
+
+        const prices = { oxen: 40, food: 0.20, clothes: 10, ammo: 2, parts: 10 };
+        const weatherTypes = ['Hot', 'Warm', 'Cool', 'Cold', 'Rainy', 'Stormy', 'Humid'];
+
+        // --- UTILS ---
+        function showScreen(screenId) {
+            document.querySelectorAll('#game-container > div').forEach(el => {
+                if(el.id.startsWith('screen-')) el.classList.add('hidden-screen');
+            });
+            document.getElementById(screenId).classList.remove('hidden-screen');
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden-screen');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden-screen');
+        }
+
+        function log(message, type = 'normal') {
+            const logEl = document.getElementById('event-log');
+            const p = document.createElement('p');
+            p.className = `mb-1 ${type === 'bad' ? 'text-rose-600 font-semibold' : type === 'good' ? 'text-emerald-600 font-semibold' : 'text-slate-700'}`;
+            // Format date for log
+            const d = new Date(gameState.year, gameState.month, gameState.day);
+            const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            p.innerHTML = `<span class="text-slate-400 text-xs w-12 inline-block">${dateStr}</span> ${message}`;
+            logEl.appendChild(p);
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        function randomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        // --- SETUP PHASE ---
+        function updateProfessionUI() {
+            document.querySelectorAll('input[name="profession"]').forEach((el, index) => {
+                const label = document.getElementById(`prof-${index+1}-label`);
+                if(el.checked) {
+                    label.classList.add('bg-emerald-50', 'border-emerald-500');
+                    label.classList.remove('border-slate-200');
+                } else {
+                    label.classList.remove('bg-emerald-50', 'border-emerald-500');
+                    label.classList.add('border-slate-200');
+                }
+            });
+        }
+
+        function updateDirectionUI() {
+            const southChecked = document.querySelector('input[name="direction"][value="southbound"]').checked;
+            const southLabel = document.getElementById('dir-south-label');
+            const northLabel = document.getElementById('dir-north-label');
+
+            if (southChecked) {
+                southLabel.classList.add('bg-emerald-50', 'border-emerald-500');
+                southLabel.classList.remove('border-slate-200');
+                northLabel.classList.remove('bg-emerald-50', 'border-emerald-500');
+                northLabel.classList.add('border-slate-200');
+            } else {
+                northLabel.classList.add('bg-emerald-50', 'border-emerald-500');
+                northLabel.classList.remove('border-slate-200');
+                southLabel.classList.remove('bg-emerald-50', 'border-emerald-500');
+                southLabel.classList.add('border-slate-200');
+            }
+        }
+
+        function initStore() {
+            // Gather setup data
+            const prof = document.querySelector('input[name="profession"]:checked').value;
+            const dir = document.querySelector('input[name="direction"]:checked').value;
+            
+            gameState.profession = prof;
+            gameState.direction = dir;
+            gameState.money = prof === 'planter' ? 1600 : prof === 'physician' ? 900 : prof === 'preacher' ? 800 : prof === 'veteran' ? 600 : 400;
+            gameState.month = parseInt(document.getElementById('start-month').value);
+            
+            // Set landmarks and store branding based on direction
+            if (dir === 'northbound') {
+                gameState.landmarks = JSON.parse(JSON.stringify(landmarksNorth));
+                document.getElementById('store-title').innerText = "Under-the-Hill Outfitters";
+                document.getElementById('store-subtitle').innerText = "Natchez, MS. Gear up for your return journey north.";
+                document.getElementById('ui-destination-label').innerText = "Miles to Nashville";
+            } else {
+                gameState.landmarks = JSON.parse(JSON.stringify(landmarksSouth));
+                document.getElementById('store-title').innerText = "Peabody's General Store";
+                document.getElementById('store-subtitle').innerText = "Nashville, TN. Equip your wagon before hitting the Trace.";
+                document.getElementById('ui-destination-label').innerText = "Miles to Natchez";
+            }
+
+            gameState.party = [];
+            for(let i=0; i<5; i++) {
+                const name = document.getElementById(`name-${i}`).value || `Traveler ${i+1}`;
+                gameState.party.push({ name: name, health: 100, alive: true, disease: null });
+            }
+
+            document.getElementById('store-money').innerText = gameState.money.toFixed(2);
+            calculateBill();
+            showScreen('screen-store');
+        }
+
+        function calculateBill() {
+            const oxen = parseInt(document.getElementById('buy-oxen').value) || 0;
+            const food = parseInt(document.getElementById('buy-food').value) || 0;
+            const clothes = parseInt(document.getElementById('buy-clothes').value) || 0;
+            const ammo = parseInt(document.getElementById('buy-ammo').value) || 0;
+            const parts = parseInt(document.getElementById('buy-parts').value) || 0;
+
+            const bill = (oxen * prices.oxen) + (food * prices.food) + (clothes * prices.clothes) + (ammo * prices.ammo) + (parts * prices.parts);
+            document.getElementById('store-bill').innerText = bill.toFixed(2);
+
+            const btn = document.getElementById('btn-finish-store');
+            const err = document.getElementById('store-error');
+            
+            if (bill > gameState.money) {
+                btn.disabled = true;
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+                err.classList.remove('hidden');
+            } else {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                err.classList.add('hidden');
+            }
+        }
+
+        function finishShopping() {
+            const bill = parseFloat(document.getElementById('store-bill').innerText);
+            if (bill > gameState.money) return;
+
+            gameState.money -= bill;
+            gameState.inventory.oxen = (parseInt(document.getElementById('buy-oxen').value) || 0) * 2; // yoke = 2
+            gameState.inventory.food = parseInt(document.getElementById('buy-food').value) || 0;
+            gameState.inventory.clothes = parseInt(document.getElementById('buy-clothes').value) || 0;
+            gameState.inventory.ammo = parseInt(document.getElementById('buy-ammo').value) || 0;
+            gameState.inventory.parts = parseInt(document.getElementById('buy-parts').value) || 0;
+
+            if (gameState.inventory.oxen === 0) {
+                alert("You need at least 1 yoke of oxen to pull the wagon!");
+                return;
+            }
+
+            gameState.active = true;
+            updateTrailUI();
+            showScreen('screen-trail');
+            
+            const originStr = gameState.direction === 'northbound' ? 'Natchez, Mississippi Territory' : 'Nashville, Tennessee';
+            const destStr = gameState.direction === 'northbound' ? 'Nashville' : 'Natchez';
+            log(`Departed ${originStr} heading for ${destStr}. The wilderness awaits.`);
+        }
+
+        // --- TRAIL LOOP ---
+        function getLivingMembers() {
+            return gameState.party.filter(p => p.alive);
+        }
+
+        function getOverallHealthStr() {
+            const living = getLivingMembers();
+            if (living.length === 0) return "Dead";
+            let avg = living.reduce((sum, p) => sum + p.health, 0) / living.length;
+            if (avg > 80) return "Good";
+            if (avg > 50) return "Fair";
+            if (avg > 25) return "Poor";
+            return "Very Poor";
+        }
+
+        function updateTrailUI() {
+            // Date
+            const d = new Date(gameState.year, gameState.month, gameState.day);
+            document.getElementById('ui-date').innerText = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+            
+            document.getElementById('ui-weather').innerText = gameState.weather;
+            
+            const healthEl = document.getElementById('ui-health');
+            const hStr = getOverallHealthStr();
+            healthEl.innerText = hStr;
+            healthEl.className = `text-lg font-semibold ${hStr === 'Good' ? 'text-emerald-400' : hStr === 'Fair' ? 'text-amber-400' : 'text-rose-500'}`;
+
+            document.getElementById('ui-pace').innerText = gameState.pace.charAt(0).toUpperCase() + gameState.pace.slice(1);
+            document.getElementById('ui-rations').innerText = gameState.rations.charAt(0).toUpperCase() + gameState.rations.slice(1);
+
+            document.getElementById('ui-inv-food').innerText = gameState.inventory.food;
+            document.getElementById('ui-inv-oxen').innerText = gameState.inventory.oxen;
+            document.getElementById('ui-inv-clothes').innerText = gameState.inventory.clothes;
+            document.getElementById('ui-inv-ammo').innerText = gameState.inventory.ammo;
+            document.getElementById('ui-inv-parts').innerText = gameState.inventory.parts;
+            document.getElementById('ui-inv-money').innerText = gameState.money.toFixed(2);
+
+            document.getElementById('ui-miles-traveled').innerText = Math.floor(gameState.miles);
+            document.getElementById('ui-progress-bar').style.width = `${(gameState.miles / gameState.totalMiles) * 100}%`;
+
+            // Next Landmark
+            if (gameState.nextLandmarkIndex < gameState.landmarks.length) {
+                const next = gameState.landmarks[gameState.nextLandmarkIndex];
+                const dist = Math.ceil(next.miles - gameState.miles);
+                document.getElementById('ui-next-landmark').innerText = `Next: ${next.name} in ${dist} miles`;
+            } else {
+                const dest = gameState.direction === 'northbound' ? 'Nashville' : 'Natchez';
+                document.getElementById('ui-next-landmark').innerText = `Arriving at ${dest} soon!`;
+            }
+        }
+
+        function changeSettings() {
+            gameState.pace = document.getElementById('select-pace').value;
+            gameState.rations = document.getElementById('select-rations').value;
+            updateTrailUI();
+        }
+
+        function advanceTime(days) {
+            for(let i=0; i<days; i++) {
+                gameState.day++;
+                gameState.daysPassed++;
+                
+                // Days in month logic (simplified)
+                if (gameState.day > 30) {
+                    gameState.day = 1;
+                    gameState.month++;
+                    if(gameState.month > 11) {
+                        gameState.month = 0;
+                        gameState.year++;
+                    }
+                }
+                
+                // Weather change chance
+                if (Math.random() < 0.2) {
+                    // Season logic
+                    if (gameState.month >= 5 && gameState.month <= 7) {
+                        gameState.weather = ['Hot', 'Hot', 'Humid', 'Stormy'][randomInt(0,3)];
+                    } else if (gameState.month >= 10 || gameState.month <= 1) {
+                        gameState.weather = ['Cold', 'Cool', 'Rainy', 'Cold'][randomInt(0,3)];
+                    } else {
+                        gameState.weather = weatherTypes[randomInt(0, weatherTypes.length-1)];
+                    }
+                }
+
+                consumeFood();
+                updateHealth();
+            }
+        }
+
+        function consumeFood() {
+            const living = getLivingMembers().length;
+            let consumed = 0;
+            if (gameState.rations === 'filling') consumed = living * 3;
+            else if (gameState.rations === 'meager') consumed = living * 2;
+            else consumed = living * 1;
+
+            gameState.inventory.food -= consumed;
+            if (gameState.inventory.food < 0) {
+                gameState.inventory.food = 0;
+                log("You are out of food! Starvation setting in.", "bad");
+            }
+        }
+
+        function updateHealth() {
+            const living = getLivingMembers();
+            if (living.length === 0) {
+                endGame(false);
+                return;
+            }
+
+            living.forEach(p => {
+                // Base strain
+                let damage = 0;
+                let heal = 0;
+
+                // Food
+                if (gameState.inventory.food === 0) damage += 15;
+                else if (gameState.rations === 'meager') damage += 2;
+                else if (gameState.rations === 'bare') damage += 5;
+                else heal += 5;
+
+                // Weather
+                if (gameState.weather === 'Cold' && gameState.inventory.clothes < gameState.party.length) damage += 5;
+                if (gameState.weather === 'Hot' && gameState.pace === 'grueling') damage += 5;
+
+                // Pace
+                if (gameState.pace === 'strenuous') damage += 2;
+                if (gameState.pace === 'grueling') damage += 6;
+                if (gameState.pace === 'steady') heal += 2;
+
+                // Profession buff
+                if (gameState.profession === 'preacher') heal += 2;
+                if (gameState.profession === 'physician') heal += 3;
+                if (gameState.profession === 'veteran') {
+                    if (gameState.pace === 'strenuous') damage = Math.max(0, damage - 1);
+                    if (gameState.pace === 'grueling') damage = Math.max(0, damage - 3);
+                }
+
+                // Disease
+                if (p.disease) {
+                    damage += 10;
+                    let cureChance = 0.2;
+                    if (gameState.profession === 'physician') cureChance = 0.5;
+                    if (Math.random() < cureChance) { // Cure chance daily
+                        log(`${p.name} recovered from ${p.disease}.`, "good");
+                        p.disease = null;
+                    }
+                }
+
+                p.health += heal - damage;
+                if (p.health > 100) p.health = 100;
+                
+                if (p.health <= 0) {
+                    p.health = 0;
+                    p.alive = false;
+                    log(`💀 ${p.name} has died.`, "bad");
+                    triggerModal("Tragedy", `${p.name} has perished on the Trace.`);
+                }
+            });
+
+            // Check if leader died
+            if (!gameState.party[0].alive) {
+                endGame(false);
+            }
+        }
+
+        function continueTrail() {
+            if (!gameState.active) return;
+            
+            let milesToday = 0;
+            if (gameState.inventory.oxen > 0) {
+                milesToday = gameState.pace === 'steady' ? 15 : gameState.pace === 'strenuous' ? 20 : 25;
+                // Weather modifiers
+                if (gameState.weather === 'Rainy' || gameState.weather === 'Stormy') milesToday *= 0.6;
+                // Oxen health (simplified)
+                if (gameState.inventory.oxen < 4) milesToday *= 0.8;
+            } else {
+                milesToday = 3; // Walking pace
+                log("No oxen! You are forced to walk.", "bad");
+            }
+
+            advanceTime(1);
+            gameState.miles += milesToday;
+
+            // Check landmarks
+            if (gameState.nextLandmarkIndex < gameState.landmarks.length) {
+                const next = gameState.landmarks[gameState.nextLandmarkIndex];
+                if (gameState.miles >= next.miles) {
+                    gameState.miles = next.miles;
+                    gameState.nextLandmarkIndex++;
+                    triggerModal("Landmark Reached", `You have arrived at ${next.name}.`);
+                    log(`Arrived at ${next.name}.`, "good");
+                    updateTrailUI();
+                    return; // Stop and let player read
+                }
+            }
+
+            // End game win
+            if (gameState.miles >= gameState.totalMiles) {
+                gameState.miles = gameState.totalMiles;
+                endGame(true);
+                return;
+            }
+
+            // RNG Events (approx 20% chance per day)
+            if (Math.random() < 0.2) {
+                rollEvent();
+            }
+
+            updateTrailUI();
+        }
+
+        function executeRest() {
+            const days = parseInt(document.getElementById('input-rest-days').value) || 1;
+            closeModal('modal-rest');
+            log(`Rested for ${days} days.`);
+            
+            // Resting gives health boost
+            for(let i=0; i<days; i++) {
+                advanceTime(1);
+                getLivingMembers().forEach(p => {
+                    p.health += 15;
+                    if(p.health > 100) p.health = 100;
+                });
+            }
+            updateTrailUI();
+        }
+
+        function hunt() {
+            if (gameState.inventory.ammo < 1) {
+                triggerModal("Out of Ammo", "You don't have any ammunition to hunt with.");
+                return;
+            }
+            
+            advanceTime(1); // Takes a day
+            gameState.inventory.ammo -= 1;
+            
+            // Profession bonus
+            let bonus = 0;
+            if (gameState.profession === 'boatman') bonus = 0.25;
+            if (gameState.profession === 'veteran') bonus = 0.15;
+
+            const success = Math.random() + bonus;
+
+            if (success > 0.6) {
+                const meat = randomInt(20, 100);
+                gameState.inventory.food += meat;
+                log(`Hunted successfully. Gained ${meat} lbs of food.`, "good");
+                triggerModal("Successful Hunt", `You shot a deer and yielded ${meat} lbs of meat. Spent 1 box of ammo.`);
+            } else {
+                log("Hunted all day but found nothing.", "bad");
+                triggerModal("Failed Hunt", "You searched the woods but found no game. Spent 1 box of ammo.");
+            }
+            updateTrailUI();
+        }
+
+        // --- EVENT ENGINE ---
+        function rollEvent() {
+            const r = Math.random();
+            const living = getLivingMembers();
+            const target = living[randomInt(0, living.length-1)];
+
+            if (r < 0.2) {
+                // Disease
+                const diseases = ['Swamp Fever (Malaria)', 'Yellow Fever', 'Dysentery', 'Cholera'];
+                const d = diseases[randomInt(0, diseases.length-1)];
+                target.disease = d;
+                log(`${target.name} has caught ${d}.`, "bad");
+                triggerModal("Disease!", `${target.name} is stricken with ${d}.`);
+            } else if (r < 0.35) {
+                // Wagon break
+                if (gameState.inventory.parts > 0) {
+                    gameState.inventory.parts--;
+                    log("Wagon axle broke. Replaced using spare parts.", "normal");
+                } else {
+                    advanceTime(3); // lose 3 days fixing it
+                    log("Wagon broke down. Spent 3 days repairing it.", "bad");
+                    triggerModal("Breakdown", "Wagon wheel shattered. With no spare parts, it took 3 days to fix.");
+                }
+            } else if (r < 0.45) {
+                // Bandit (Mason Gang)
+                if (gameState.money > 20) {
+                    const lost = Math.floor(Math.random() * 50) + 10;
+                    gameState.money -= lost;
+                    if(gameState.money < 0) gameState.money = 0;
+                    log(`Mason gang bandits stole $${lost}!`, "bad");
+                    triggerModal("Land Pirates", `The notorious Mason Gang ambushed your camp in the night. They stole $${lost}.`);
+                } else {
+                    gameState.inventory.food = Math.max(0, gameState.inventory.food - 50);
+                    log("Bandits raided your food supply.", "bad");
+                }
+            } else if (r < 0.55) {
+                // Snakebite
+                target.health -= 30;
+                log(`${target.name} was bitten by a rattlesnake!`, "bad");
+                if (target.health <= 0) target.alive = false;
+            } else if (r < 0.65) {
+                // Ox wander
+                if (gameState.inventory.oxen > 0) {
+                    gameState.inventory.oxen--;
+                    advanceTime(1);
+                    log("An ox wandered off or died.", "bad");
+                    triggerModal("Lost Ox", "You woke up to find one of your oxen has died from exhaustion.");
+                }
+            } else if (r < 0.75) {
+                // Find wild fruit/berries
+                const found = randomInt(10, 40);
+                gameState.inventory.food += found;
+                log(`Gathered ${found} lbs of wild berries.`, "good");
+            } else if (r < 0.85) {
+                // Bad water
+                living.forEach(p => p.health -= 10);
+                log("Drank bad water from a swamp. Party is sick.", "bad");
+            } else {
+                // Favorable trade
+                if (gameState.inventory.clothes > 0) {
+                    gameState.inventory.clothes--;
+                    gameState.inventory.food += 50;
+                    log("Traded clothing to locals for 50 lbs of food.", "good");
+                }
+            }
+        }
+
+        function triggerModal(title, desc) {
+            document.getElementById('event-title').innerText = title;
+            document.getElementById('event-desc').innerText = desc;
+            openModal('modal-event');
+        }
+
+        // --- END GAME ---
+        function endGame(won) {
+            gameState.active = false;
+            
+            const endScreen = document.getElementById('screen-end');
+            const title = document.getElementById('end-title');
+            const msg = document.getElementById('end-message');
+            
+            const destName = gameState.direction === 'northbound' ? 'Nashville' : 'Natchez';
+
+            if (won) {
+                endScreen.classList.remove('bg-slate-900');
+                endScreen.classList.add('bg-gradient-to-b', 'from-emerald-800', 'to-emerald-950');
+                title.innerText = `You Reached ${destName}!`;
+                title.classList.add('text-emerald-300');
+                msg.innerText = `Congratulations, you survived the brutal Natchez Trace to ${destName}.`;
+            } else {
+                title.innerText = "Game Over";
+                title.classList.add('text-rose-500');
+                if (!gameState.party[0].alive) {
+                    msg.innerText = `Leader ${gameState.party[0].name} has died. The expedition failed.`;
+                } else {
+                    msg.innerText = "Your entire party has perished.";
+                }
+            }
+
+            document.getElementById('end-leader').innerText = gameState.party[0].name;
+            document.getElementById('end-miles').innerText = Math.floor(gameState.miles);
+            document.getElementById('end-days').innerText = gameState.daysPassed;
+            
+            const survivors = getLivingMembers().length;
+            document.getElementById('end-survivors').innerText = survivors;
+            
+            // Score calc
+            let score = 0;
+            if (won) {
+                score += survivors * 1000;
+                score += gameState.money * 2;
+                score += gameState.inventory.food;
+                if (gameState.profession === 'boatman') score *= 1.5; // Difficulty multiplier
+                if (gameState.direction === 'northbound') score *= 1.2; // Northbound multiplier
+            }
+            document.getElementById('end-score').innerText = Math.floor(score);
+
+            showScreen('screen-end');
+        }
+    </script>
+</body>
+</html>
